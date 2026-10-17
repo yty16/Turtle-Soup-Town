@@ -305,3 +305,27 @@ button { font-family: inherit; cursor: pointer; }
 /* 添加汤页内嵌的腾讯文档收集表 */
 .form-open { margin-top: 10px; }
 .form-open .btn { text-decoration: none; display: inline-block; }
+
+/* 内容适龄提示弹窗（红汤 / 黑汤 前弹出） */
+.warn-overlay {
+  position: fixed; inset: 0; background: rgba(20, 40, 35, .55);
+  display: flex; align-items: center; justify-content: center; z-index: 70; padding: 20px;
+}
+.warn-overlay[hidden] { display: none; }
+.warn-dialog {
+  background: #fff; border-radius: var(--radius); width: 100%; max-width: 480px;
+  box-shadow: var(--shadow); padding: 24px; text-align: center;
+  border-top: 5px solid #e0573e;
+}
+.warn-icon { font-size: 40px; line-height: 1; margin-bottom: 6px; }
+.warn-title { margin: 0 0 12px; color: #c23b22; font-size: 20px; }
+.warn-body { text-align: left; color: var(--ink); font-size: 14px; line-height: 1.7; }
+.warn-body p { margin: 0 0 10px; }
+.warn-body ul { margin: 0; padding-left: 4px; list-style: none; }
+.warn-body li { padding: 5px 0; border-bottom: 1px dashed var(--line, #e3e9e7); }
+.warn-body li:last-child { border-bottom: none; }
+.warn-actions { display: flex; gap: 12px; margin-top: 18px; }
+.warn-actions .btn { flex: 1; }
+@media (max-width: 520px) {
+  .warn-actions { flex-direction: column; }
+}
