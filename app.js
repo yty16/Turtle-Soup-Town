@@ -28,6 +28,29 @@
   if (!save.custom) save.custom = [];
   if (!save.favorites) save.favorites = [];
 
+  // 规范化所有进度条目，兼容旧版本（提问次数限制功能之前）留下的缺字段数据
+  function normalizeProgressEntry(p) {
+    if (!p || typeof p !== "object") p = {};
+    if (!Array.isArray(p.asked)) p.asked = [];
+    if (!Array.isArray(p.answered)) p.answered = [];
+    if (!Array.isArray(p.guesses)) p.guesses = [];
+    if (typeof p.hintsUsed !== "number" || p.hintsUsed < 0) p.hintsUsed = 0;
+    if (typeof p.revealed !== "boolean") p.revealed = false;
+    if (typeof p.status !== "string") p.status = "playing";
+    // 旧数据里 asked 可能不是 {q,a} 结构，统一清洗成对象
+    p.asked = p.asked.map(function (x) {
+      if (x && typeof x === "object") return x;
+      return { q: "" + (x == null ? "" : x), a: "irrelevant", guide: false, note: "" };
+    }).filter(function (x) { return x && x.q; });
+    return p;
+  }
+  function normalizeProgress() {
+    var prog = save.progress || {};
+    Object.keys(prog).forEach(function (id) { prog[id] = normalizeProgressEntry(prog[id]); });
+  }
+  normalizeProgress();
+  persist();
+
   function allSoups() { return (window.SOUPS || []).concat(save.custom); }
   function getSoup(id) { return allSoups().filter(function (s) { return s.id === id; })[0]; }
   function libraryActive() { return document.getElementById("view-library").classList.contains("active"); }
@@ -289,6 +312,8 @@
     if (!soup) { toast("找不到这锅汤"); return; }
     if (!save.progress[id]) {
       save.progress[id] = { status: "playing", asked: [], answered: [], hintsUsed: 0, guesses: [], revealed: false };
+    } else {
+      save.progress[id] = normalizeProgressEntry(save.progress[id]);
     }
     // 写入直达链接 hash（不刷新页面）；离开游戏页时会被清掉
     if (("" + location.hash) !== "#soup=" + encodeURIComponent(id)) {
@@ -350,7 +375,7 @@
     var inspireBtns = document.querySelectorAll("#inspire-area .q-btn");
     var notice = document.getElementById("timeout-notice");
     if (p.limit) {
-      var left = Math.max(0, p.limit - p.asked.length);
+      var left = Math.max(0, p.limit - (p.asked || []).length);
       el.textContent = "还能问 " + left + " 次";
       var done = left <= 0;
       if (input) { input.disabled = done; input.style.opacity = done ? ".5" : "1"; }
