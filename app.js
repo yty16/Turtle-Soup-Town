@@ -266,7 +266,25 @@
   }
 
   /* ---------------- 游戏 ---------------- */
+  function isRestricted(soup) {
+    var k = soup.kind || [];
+    return k.indexOf("红汤") >= 0 || k.indexOf("黑汤") >= 0;
+  }
+
+  var pendingWarnId = null;
+
   function startGame(id) {
+    var soup = getSoup(id);
+    if (!soup) { toast("找不到这锅汤"); return; }
+    // 红汤 / 黑汤：每次打开前都需确认适龄提示
+    if (isRestricted(soup)) {
+      openWarn(id);
+      return;
+    }
+    proceedGame(id);
+  }
+
+  function proceedGame(id) {
     var soup = getSoup(id);
     if (!soup) { toast("找不到这锅汤"); return; }
     if (!save.progress[id]) {
@@ -279,6 +297,36 @@
     showView("game");
     renderGame(soup);
   }
+
+  function openWarn(id) {
+    pendingWarnId = id;
+    var ov = document.getElementById("warn-overlay");
+    if (ov) ov.removeAttribute("hidden");
+  }
+  function closeWarn() {
+    var ov = document.getElementById("warn-overlay");
+    if (ov) ov.setAttribute("hidden", "");
+    pendingWarnId = null;
+  }
+  (function bindWarn() {
+    var ov = document.getElementById("warn-overlay");
+    if (!ov) return;
+    document.getElementById("warn-cancel").addEventListener("click", function () {
+      closeWarn();
+      toast("已取消进入");
+    });
+    document.getElementById("warn-confirm").addEventListener("click", function () {
+      var id = pendingWarnId;
+      closeWarn();
+      if (!id) return;
+      proceedGame(id);
+    });
+    // 点击遮罩或按 Esc 视为取消（不进入）
+    ov.addEventListener("click", function (e) { if (e.target === ov) closeWarn(); });
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape" && !ov.hasAttribute("hidden")) closeWarn();
+    });
+  })();
 
   function guardLimit(soup) {
     var p = save.progress[soup.id];
