@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>海龟汤小镇 · 互动推理游戏</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="app-header">
+    <div class="bar">
+      <div class="brand"><span class="logo">🐢</span><span>海龟汤小镇</span></div>
+      <nav class="nav">
+        <a href="#" data-view="home" class="active">首页</a>
+        <a href="#" data-view="library">汤库</a>
+        <a href="#" data-view="add">添加汤</a>
+        <a href="#" data-view="about">关于</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="wrap">
+
+    <!-- 首页 -->
+    <section id="view-home" class="view active">
+      <div class="card hero">
+        <div class="big-logo">🐢🍲</div>
+        <h1>一碗汤，一段离奇真相</h1>
+        <p>这里收录了经典海龟汤的「汤面」与「汤底」，你可以和网站的主持人一问一答，推理出背后的故事。</p>
+        <p style="margin-top:12px">
+          <button class="btn accent" id="btn-random">🎲 随机开一锅</button>
+          <button class="btn ghost" data-view="library">📚 浏览全部汤面</button>
+        </p>
+      </div>
+
+      <div class="card">
+        <h3 style="margin-top:0">怎么玩？</h3>
+        <div class="steps">
+          <div class="step">
+            <div class="num">1</div>
+            <div><b>读汤面</b></div>
+            <div style="font-size:13px;color:var(--ink-soft)">看到一段离奇、残缺的故事开头。</div>
+          </div>
+          <div class="step">
+            <div class="num">2</div>
+            <div><b>问主持</b></div>
+            <div style="font-size:13px;color:var(--ink-soft)">用「是 / 否 / 是也不是 / 不重要」提问，逐步拼凑真相。</div>
+          </div>
+          <div class="step">
+            <div class="num">3</div>
+            <div><b>揭汤底</b></div>
+            <div style="font-size:13px;color:var(--ink-soft)">卡关可要提示，或随时揭示完整汤底对照。</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="stats">
+          <div><b id="stat-total">0</b>已收录汤面</div>
+          <div><b id="stat-cleared">0</b>我已通关</div>
+          <div><b id="stat-fav">0</b>我的收藏</div>
+          <div><b id="stat-custom">0</b>我的私房汤</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 汤库 -->
+    <section id="view-library" class="view">
+      <div class="card">
+        <h3 style="margin-top:0">📚 汤库</h3>
+        <div class="filters search-row">
+          <input type="text" id="search-input" placeholder="搜索汤名或汤面关键词…" />
+        </div>
+        <div class="filters" id="status-filters">
+          <span class="chip active" data-status="all">全部状态</span>
+          <span class="chip" data-status="none">未开始</span>
+          <span class="chip" data-status="playing">进行中</span>
+          <span class="chip" data-status="cleared">已通关</span>
+          <span class="chip" data-status="timeout">超时通关</span>
+          <span class="chip" data-status="revealed">已揭示</span>
+        </div>
+        <div class="filters" id="fav-filters">
+          <span class="chip" data-fav="1">只看收藏</span>
+        </div>
+        <div class="filters">
+          <span class="chip active" data-diff="all">全部难度</span>
+          <span class="chip" data-diff="1">★ 简单</span>
+          <span class="chip" data-diff="2">★★ 中等</span>
+          <span class="chip" data-diff="3">★★★ 困难</span>
+        </div>
+        <div class="filters" id="kind-filters">
+          <span class="chip active" data-kind="all">全部汤种</span>
+          <span class="chip" data-kind="本格汤">本格汤</span>
+          <span class="chip" data-kind="变格汤">变格汤</span>
+          <span class="chip" data-kind="白汤">白汤</span>
+          <span class="chip" data-kind="红汤">红汤</span>
+          <span class="chip" data-kind="黑汤">黑汤</span>
+          <button type="button" class="kind-help-btn" id="kind-help-btn">汤种说明</button>
+        </div>
+        <div class="kind-help-panel" id="kind-help-panel" hidden>
+          <p>本格汤＝现实逻辑可解释 · 变格汤＝含超自然设定 · 白汤＝轻松幽默日常 · 红汤＝涉及死亡/血腥 · 黑汤＝黑暗压抑恐怖</p>
+        </div>
+        <div class="filters" id="tag-filters"></div>
+        <div class="grid" id="soup-grid"></div>
+      </div>
+    </section>
+
+    <!-- 游戏 -->
+    <section id="view-game" class="view">
+      <div id="game-content"></div>
+    </section>
+
+    <!-- 添加汤 -->
+    <section id="view-add" class="view">
+      <div class="card">
+        <h3 style="margin-top:0">➕ 添加一锅私房汤</h3>
+        <p class="help">添加的汤只保存在你本机浏览器（localStorage），不会上传。也可以导入/导出与他人分享。</p>
+        <div class="form-row">
+          <label>汤名 *</label>
+          <input type="text" id="f-title" placeholder="例如：深夜的电梯" />
+        </div>
+        <div class="form-row">
+          <label>汤面（离奇开头）*</label>
+          <textarea id="f-surface" placeholder="写一段引人好奇的残缺故事…"></textarea>
+        </div>
+        <div class="form-row">
+          <label>汤底（完整真相）*</label>
+          <textarea id="f-bottom" placeholder="揭示全部真相…"></textarea>
+        </div>
+        <div class="form-row">
+          <label>难度</label>
+          <select id="f-diff">
+            <option value="1">★ 简单</option>
+            <option value="2" selected>★★ 中等</option>
+            <option value="3">★★★ 困难</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <label>汤种（可多选）</label>
+          <div id="f-kinds" style="display:flex;gap:8px;flex-wrap:wrap">
+            <label style="font-weight:400"><input type="checkbox" value="本格汤" checked /> 本格汤</label>
+            <label style="font-weight:400"><input type="checkbox" value="变格汤" /> 变格汤</label>
+            <label style="font-weight:400"><input type="checkbox" value="白汤" /> 白汤</label>
+            <label style="font-weight:400"><input type="checkbox" value="红汤" /> 红汤</label>
+            <label style="font-weight:400"><input type="checkbox" value="黑汤" /> 黑汤</label>
+          </div>
+          <div class="help">本格＝现实可解释 · 变格＝超自然 · 红＝死亡血腥 · 黑＝黑暗恐怖 · 白＝轻松日常</div>
+        </div>
+        <div class="form-row">
+          <label>标签（逗号分隔）</label>
+          <input type="text" id="f-tags" placeholder="悬疑, 推理" />
+        </div>
+        <div class="form-row">
+          <label>渐进提示（每行一条）</label>
+          <textarea id="f-hints" placeholder="提示一&#10;提示二&#10;提示三"></textarea>
+        </div>
+        <div class="form-row">
+          <label>预设问答（高级，可选）</label>
+          <textarea id="f-qa" placeholder="每行一条，格式：&#10;标准问题 | 关键词1,关键词2 | 答案 | 备注&#10;答案填 yes/no/both/irrelevant"></textarea>
+          <div class="help">例：他是因为口渴吗 | 口渴,渴 | no | 他并不渴</div>
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <button class="btn" id="btn-save-soup">保存这锅汤</button>
+          <button class="btn ghost" id="btn-export">⬇ 导出全部数据</button>
+          <button class="btn ghost" id="btn-import">⬆ 导入数据</button>
+          <input type="file" id="import-file" accept="application/json" class="hidden" />
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 style="margin-top:0">📮 在线投稿收集表（提交给作者，纳入海龟汤小镇）</h3>
+        <p class="help">想让自己原创的汤被收录进汤库？点击下面的按钮打开收集表填写，提交后作者就能收到。上面的「本机私房汤」表单则只保存在你自己的浏览器里，不上传。</p>
+        <div class="form-open">
+          <a class="btn" href="https://docs.qq.com/form/page/DZEhTdXVIR093bHZh" target="_blank" rel="noopener">打开收集表 ↗</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- 关于 -->
+    <section id="view-about" class="view about">
+      <div class="card">
+        <h3 style="margin-top:0">关于「海龟汤」</h3>
+        <p>海龟汤（Lateral Thinking Puzzle，又称“情境猜谜”）是一种推理聚会游戏。主持人给出一段离奇的「汤面」，玩家只能向主持人提「是非题」，主持人以「是 / 否 / 是也不是 / 不重要」作答，最终由玩家还原出完整的「汤底」。</p>
+        <p>本站的每一锅汤都内置了主持人问答库，你输入问题时，系统会匹配关键词给出标准回答；匹配不到时，会引导你换角度提问，并提供「灵感提问」帮你破冰。</p>
+        <h3>数据说明</h3>
+        <p>内置汤面为流传较广的经典版本，已尽量核对准确；「添加汤」与游戏进度均保存在你本机浏览器中，不上传任何服务器。你可随时导出备份或导入分享。</p>
+        <h3>玩法提示</h3>
+        <p>提问建议从「人物是谁、动机是什么、时间地点、关键物品、有没有别人」等角度切入。善用提示与灵感提问，别让自己卡太久。</p>
+        <p style="color:var(--ink-soft);font-size:13px">版本 <span id="about-version"></span> · 离线可用</p>
+      </div>
+    </section>
+
+  </main>
+
+  <div class="share-overlay" id="share-overlay" hidden>
+    <div class="share-dialog" id="share-dialog">
+      <div class="share-head">
+        <h3>分享这锅汤</h3>
+        <button type="button" class="x" id="share-close" aria-label="关闭">×</button>
+      </div>
+      <p class="help">勾选要分享的内容，生成的文本可复制后发给朋友（纯本地生成，不上传）：</p>
+      <div class="share-opts">
+        <label><input type="checkbox" data-share="surface" /> 汤面（题目）</label>
+        <label><input type="checkbox" data-share="qa" /> 我的提问与回答</label>
+        <label><input type="checkbox" data-share="hints" /> 已用过的提示</label>
+        <label><input type="checkbox" data-share="guesses" /> 我的推理记录</label>
+        <label><input type="checkbox" data-share="status" /> 当前进度状态</label>
+        <label><input type="checkbox" data-share="bottom" /> 汤底（剧透，慎选）</label>
+      </div>
+      <div class="share-link">
+        <label>这个汤的直达链接（点开即可跳到这锅汤）：</label>
+        <div class="link-row">
+          <input type="text" id="share-link" readonly />
+          <button class="btn ghost small" id="share-copy-link">📋 复制链接</button>
+        </div>
+      </div>
+      <textarea id="share-text" readonly></textarea>
+      <div class="share-actions">
+        <button class="btn small" id="share-copy">📋 复制分享文本</button>
+        <button class="btn ghost small" id="share-download">⬇ 下载 .txt</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <footer class="site-footer">
+    <div class="footer-notice">本网站广泛收录海龟汤迷题，如有侵权请联系删除</div>
+    <small>&copy; 2026&ndash;<script>document.write(new Date().getFullYear())</script> <a href="https://github.com/yty16" target="_blank" rel="noopener">yty7816</a> 保留所有权利</small>
+  </footer>
+
+  <script src="data.js"></script>
+  <script src="data_more.js"></script>
+  <script src="data_keys.js"></script>
+  <script src="data_inspire.js"></script>
+  <script src="data_new.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
