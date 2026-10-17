@@ -615,7 +615,7 @@
     var pool = (window.UNIVERSAL_INSPIRE || []);
     var list = pool.map(function (t) { return { q: t.q, a: detectUniversal(soup, t) }; });
     if (!list.length) { area.innerHTML = ""; return; }
-    var html = '<div class="label">💭 灵感提问（点一下直接向主持人发问，万能中性破冰）：</div><div class="questions">';
+    var html = '<div class="label">💭 灵感提问：</div><div class="questions">';
     list.forEach(function (item, i) {
       html += '<button class="q-btn" data-i="' + i + '">' + esc(item.q) + "</button>";
     });
