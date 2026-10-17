@@ -353,16 +353,8 @@
     });
   })();
 
+  // 超时后仍可继续提问（不再拦截），只是该局最终记为超时通关、不算成功通关
   function guardLimit(soup) {
-    var p = save.progress[soup.id];
-    if (p.limit && p.asked.length >= p.limit) {
-      appendHost({
-        a: "irrelevant",
-        guide: true,
-        note: "提问次数已用完（共 " + p.limit + " 次），你已超时。仍可点「🔍 揭示汤底」查看真相，但会记为超时通关，不算成功通关。"
-      });
-      return false;
-    }
     return true;
   }
 
@@ -378,13 +370,20 @@
       var left = Math.max(0, p.limit - (p.asked || []).length);
       el.textContent = "还能问 " + left + " 次";
       var done = left <= 0;
-      if (input) { input.disabled = done; input.style.opacity = done ? ".5" : "1"; }
-      if (send) send.disabled = done;
-      inspireBtns.forEach(function (b) { if (!b.disabled || b.style.opacity !== ".5") b.disabled = done; });
+      if (done) el.textContent = "已超时（可继续提问）";
+      // 超时后不锁定提问：输入框、发送按钮、灵感按钮全部保持可用，只是不算成功通关
+      var askedSet = {};
+      (p.asked || []).forEach(function (x) { askedSet[x.q] = 1; });
+      if (input) { input.disabled = false; input.style.opacity = "1"; }
+      if (send) send.disabled = false;
+      inspireBtns.forEach(function (b) {
+        if (askedSet[b.textContent]) { b.disabled = true; b.style.opacity = ".5"; }
+        else { b.disabled = false; b.style.opacity = "1"; }
+      });
       // 超时的常驻提示（提问仍可用「揭示汤底」，但不算成功通关）
       if (done && notice && p.status !== "timeout") {
         notice.hidden = false;
-        notice.innerHTML = "⏰ 提问次数已用完，你已<b>超时</b>。仍可点「🔍 揭示汤底」查看真相，但会记为<b>超时通关</b>，不算成功通关。";
+        notice.innerHTML = "⏰ 提问次数已用完，你已<b>超时</b>。仍可继续提问，但这次最终会记为<b>超时通关</b>，不算成功通关。";
       } else if (notice && !done) {
         notice.hidden = true;
       }
@@ -711,15 +710,27 @@
   }
 
   // 当玩家推理出全部关键情节时，通关并自动揭晓汤底
+  // 若提问次数已用完（实际提问数超过限定），仍揭晓汤底但记为「超时通关」，不算成功通关
   function checkClear(soup) {
     var r = computeClear(soup);
     if (r.done) {
       var p = save.progress[soup.id];
       if (!p.revealed) {
-        p.revealed = true; p.status = "cleared"; persist();
+        p.revealed = true;
+        var over = p.limit && (p.asked || []).length > p.limit;
+        p.status = over ? "timeout" : "cleared";
+        persist();
         showBottom(soup);
       }
-      showClearBanner("🎉 通关成功！你已推理出全部 " + r.total + " 个关键情节，汤底已自动揭晓。");
+      if (p.status === "timeout") {
+        var tn = document.getElementById("timeout-notice");
+        if (tn) {
+          tn.hidden = false;
+          tn.innerHTML = "⏰ <b>超时通关</b>：提问次数已用完后才完成推理，汤底已自动揭晓，但这次不算成功通关。";
+        }
+      } else {
+        showClearBanner("🎉 通关成功！你已推理出全部 " + r.total + " 个关键情节，汤底已自动揭晓。");
+      }
     }
     updateKeyProgress(soup);
     return r;
@@ -752,7 +763,7 @@
         var tnotice = document.getElementById("timeout-notice");
         if (tnotice) {
           tnotice.hidden = false;
-          tnotice.innerHTML = "⏰ <b>超时通关</b>：提问次数已用完，你查看了汤底。这次不算成功通关。";
+          tnotice.innerHTML = "⏰ <b>超时通关</b>：提问次数已用完，这次不算成功通关。";
         }
       }
     }
