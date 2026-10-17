@@ -592,15 +592,30 @@
     checkClear(soup);
   }
 
+  // 中性万能灵感模板：扫描该汤 surface/bottom/qa，按 pos/neg/def 判定 yes/no/不重要
+  // 只把「汤面 + 汤底 + 答"是"的问句」作为正向信号，「答"否"的问句」作为负向信号，
+  // 避免被反问/假设句（如"他是被谋杀的吗？否"）带偏造成误判。
+  function detectUniversal(soup, t) {
+    var yesQ = (soup.qa || []).filter(function (e) { return e.a === "yes"; })
+      .map(function (e) { return e.q; }).join(" ");
+    var noQ = (soup.qa || []).filter(function (e) { return e.a === "no"; })
+      .map(function (e) { return e.q; }).join(" ");
+    var posHay = (soup.surface || "") + " " + (soup.bottom || "") + " " + yesQ;
+    var negHay = (soup.surface || "") + " " + (soup.bottom || "") + " " + noQ;
+    var pos = (t.pos || []).some(function (k) { return posHay.indexOf(k) !== -1; });
+    var neg = (t.neg || []).some(function (k) { return negHay.indexOf(k) !== -1; });
+    if (pos && !neg) return "yes";
+    if (neg && !pos) return "no";
+    return t.def || "irrelevant";
+  }
+
   function renderInspire(soup) {
     var area = document.getElementById("inspire-area");
-    // 优先使用不剧透的常规破冰问题；未定义的汤回退为预设问答的问法
-    var custom = (window.SOUP_INSPIRE && window.SOUP_INSPIRE[soup.id]) || null;
-    var list = (custom && custom.length)
-      ? custom
-      : (soup.qa || []).map(function (e) { return { q: e.q, a: e.a }; });
+    // 所有汤共用中性万能模板，不剧透任何一锅的具体情节
+    var pool = (window.UNIVERSAL_INSPIRE || []);
+    var list = pool.map(function (t) { return { q: t.q, a: detectUniversal(soup, t) }; });
     if (!list.length) { area.innerHTML = ""; return; }
-    var html = '<div class="label">💭 灵感提问（点一下直接向主持人发问）：</div><div class="questions">';
+    var html = '<div class="label">💭 灵感提问（点一下直接向主持人发问，万能中性破冰）：</div><div class="questions">';
     list.forEach(function (item, i) {
       html += '<button class="q-btn" data-i="' + i + '">' + esc(item.q) + "</button>";
     });
