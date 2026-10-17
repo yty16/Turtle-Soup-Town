@@ -224,6 +224,26 @@
 
   <div class="toast" id="toast"></div>
 
+  <!-- 内容适龄提示：打开红汤 / 黑汤前弹出 -->
+  <div class="warn-overlay" id="warn-overlay" hidden>
+    <div class="warn-dialog" role="alertdialog" aria-modal="true" aria-labelledby="warn-title">
+      <h3 class="warn-title" id="warn-title">内容适龄提示</h3>
+      <div class="warn-body">
+        <p>你即将打开的这锅海龟汤属于 <strong>红汤 / 黑汤</strong>，可能包含<strong>暴力、恐怖、血腥、惊悚</strong>等令人不安的内容。</p>
+        <ul>
+          <li>汤中内容可能引起不适，请谨慎游玩</li>
+          <li>如感到不适请立即退出</li>
+          <li>本网站不负任何责任</li>
+          <li><strong>16 岁以下禁止使用</strong></li>
+        </ul>
+      </div>
+      <div class="warn-actions">
+        <button class="btn ghost" id="warn-cancel">放弃，返回</button>
+        <button class="btn accent" id="warn-confirm">我已满 16 岁，谨慎进入</button>
+      </div>
+    </div>
+  </div>
+
   <footer class="site-footer">
     <div class="footer-notice">本网站广泛收录海龟汤迷题，如有侵权请联系删除</div>
     <small>&copy; 2026&ndash;<script>document.write(new Date().getFullYear())</script> <a href="https://github.com/yty16" target="_blank" rel="noopener">yty7816</a> 保留所有权利</small>
