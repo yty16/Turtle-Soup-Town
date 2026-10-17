@@ -1,0 +1,3 @@
+# CloudFlare Pages 配置（纯静态站点，无构建步骤）
+name = "turtle-soup-town"
+pages_build_output_dir = "."
